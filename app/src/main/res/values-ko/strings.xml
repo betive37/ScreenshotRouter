@@ -1,0 +1,121 @@
+<resources>
+    <string name="app_name">ScreenshotRouter</string>
+    <string name="unknown_screenshot_name">스크린샷</string>
+    <string name="unknown_destination_label">대상 폴더</string>
+    <string name="default_destination_a">대상 A</string>
+    <string name="default_destination_b">대상 B</string>
+
+    <string name="tab_setup">설정</string>
+    <string name="tab_destinations">대상</string>
+    <string name="tab_monitor">모니터</string>
+    <string name="tab_log">로그</string>
+
+    <string name="action_stop">중지</string>
+    <string name="action_save_to_a">A에 저장</string>
+    <string name="action_save_to_b">B에 저장</string>
+    <string name="action_dismiss">닫기</string>
+    <string name="action_approve_delete">삭제 승인</string>
+
+    <string name="notification_channel_monitoring_name">활성 모니터링</string>
+    <string name="notification_channel_monitoring_description">스크린샷 라우팅이 활성화되어 있을 때 표시되는 지속 알림입니다.</string>
+    <string name="notification_channel_routing_name">스크린샷 라우팅 작업</string>
+    <string name="notification_channel_routing_description">대체 라우팅 버튼과 라우팅 결과입니다.</string>
+    <string name="notification_monitoring_title">스크린샷 라우팅 활성화됨</string>
+    <string name="notification_monitoring_text">MediaStore에서 새 스크린샷을 감시 중입니다. 탭하면 ScreenshotRouter가 열립니다.</string>
+    <string name="notification_route_title">스크린샷 라우팅</string>
+
+    <string name="route_result_copied">%1$s에 복사됨</string>
+    <string name="route_result_moved">%1$s로 이동됨</string>
+    <string name="route_result_delete_consent_required">%1$s에 복사됨. 원본을 삭제하려면 Android 삭제 요청을 승인하세요.</string>
+    <string name="route_result_delete_consent_denied">%1$s에 복사됨. 삭제 승인이 없어 원본은 유지되었습니다.</string>
+    <string name="log_delete_consent_missing_uri">스크린샷 URI가 없어 삭제 승인을 요청할 수 없습니다.</string>
+    <string name="log_delete_consent_launch_failed">Android 삭제 승인 화면을 열 수 없습니다: %1$s</string>
+    <string name="log_delete_consent_unavailable">이 항목에는 Android 삭제 승인을 사용할 수 없습니다.</string>
+    <string name="log_delete_consent_activity_deferred">삭제 승인 화면을 즉시 열 수 없습니다. 알림 작업을 사용하세요. %1$s</string>
+
+    <string name="overlay_route_screenshot">스크린샷 라우팅</string>
+    <string name="overlay_route_hint">← B   %1$s   A →</string>
+    <string name="overlay_dismiss_content_description">스크린샷 라우팅 카드 닫기</string>
+
+    <string name="setup_title">설정 체크리스트</string>
+    <string name="permission_local_only">ScreenshotRouter에는 INTERNET 권한, 분석, 크래시 리포팅, OCR이 없습니다. 라우팅은 이 기기 안에서만 처리됩니다.</string>
+    <string name="permission_notifications_title">알림</string>
+    <string name="permission_notifications_detail">알림은 포그라운드 모니터링을 사용자에게 표시하고, 오버레이를 사용할 수 없을 때 작업 버튼을 제공합니다.</string>
+    <string name="permission_media_title">이미지/미디어 접근</string>
+    <string name="permission_media_detail">이미지 접근 권한은 최근 MediaStore 이미지 메타데이터를 감시하고 선택된 스크린샷을 복사용으로 여는 데 사용됩니다.</string>
+    <string name="permission_media_partial_detail">선택한 사진 접근만 활성화되어 있습니다. 전체 이미지 접근 또는 소스 폴더 설정이 없으면 이후 스크린샷 자동 감지가 제한될 수 있습니다.</string>
+    <string name="permission_overlay_title">스와이프 오버레이</string>
+    <string name="permission_overlay_detail">다른 앱 위에 표시 권한을 허용하면 선택적 스와이프 카드를 사용할 수 있습니다. 권한이 없으면 알림 작업 버튼을 사용합니다.</string>
+    <string name="permission_granted">허용됨</string>
+    <string name="permission_optional">선택</string>
+    <string name="permission_needed">필요</string>
+    <string name="action_grant_notifications">알림 허용</string>
+    <string name="action_grant_image_access">이미지 접근 허용</string>
+    <string name="action_request_full_image_access">전체 이미지 접근 요청</string>
+    <string name="action_open_overlay_settings">오버레이 설정 열기</string>
+
+    <string name="destinations_title">대상 매핑</string>
+    <string name="destinations_description">왼쪽 스와이프는 B로, 오른쪽 스와이프는 A로 라우팅합니다. SAF 폴더를 우선 사용하며 영구 tree URI로 저장합니다.</string>
+    <string name="route_mode_title">라우팅 모드</string>
+    <string name="route_mode_copy">복사</string>
+    <string name="route_mode_move">이동</string>
+    <string name="route_mode_description">이동 모드는 항상 먼저 복사하고 Android가 삭제 경로를 허용할 때만 원본을 삭제합니다. 삭제할 수 없으면 복사됨 및 원본 유지로 표시합니다.</string>
+    <string name="left_swipe_destination_title">왼쪽 스와이프 → B</string>
+    <string name="right_swipe_destination_title">오른쪽 스와이프 → A</string>
+    <string name="destination_enabled">활성</string>
+    <string name="destination_disabled">비활성</string>
+    <string name="destination_label">라벨</string>
+    <string name="destination_target">대상: %1$s</string>
+    <string name="destination_target_saf">SAF 폴더 선택됨</string>
+    <string name="destination_target_media_store">MediaStore %1$s</string>
+    <string name="destination_target_unconfigured">설정되지 않음</string>
+    <string name="action_choose_saf_folder">SAF 폴더 선택</string>
+    <string name="action_use_app_managed">앱 관리 대상 사용</string>
+    <string name="action_clear_destination">대상 지우기</string>
+
+    <string name="monitor_title">모니터</string>
+    <string name="status_title">상태</string>
+    <string name="monitoring_active">포그라운드 모니터링이 활성화되어 있습니다</string>
+    <string name="monitoring_stopped">모니터링이 중지되었습니다</string>
+    <string name="notifications_status">알림: %1$s</string>
+    <string name="image_access_status">이미지 접근: %1$s</string>
+    <string name="overlay_status">오버레이: %1$s</string>
+    <string name="left_destination_status">왼쪽 대상: %1$s</string>
+    <string name="right_destination_status">오른쪽 대상: %1$s</string>
+    <string name="mode_status">모드: %1$s</string>
+    <string name="state_granted_lower">허용됨</string>
+    <string name="state_not_granted">허용되지 않음</string>
+    <string name="media_state_full">전체 이미지 접근 허용됨</string>
+    <string name="media_state_partial">선택한 사진 접근만 허용됨</string>
+    <string name="media_state_missing">허용되지 않음</string>
+    <string name="overlay_available">사용 가능</string>
+    <string name="overlay_fallback">알림 대체 동작 사용</string>
+    <string name="not_configured">설정되지 않음</string>
+    <string name="action_start_monitoring">모니터링 시작</string>
+    <string name="latest_status_title">최근 로컬 상태</string>
+    <string name="no_local_events">아직 로컬 이벤트가 없습니다.</string>
+
+    <string name="log_title">로컬 로그</string>
+    <string name="log_privacy_description">로컬 메타데이터와 라우팅 결과만 저장합니다. 스크린샷 내용은 분석하거나 업로드하지 않습니다.</string>
+    <string name="action_clear_log">로그 지우기</string>
+    <string name="log_empty">아직 로그 항목이 없습니다.</string>
+
+    <string name="log_notification_permission_granted">알림 권한이 허용되었습니다</string>
+    <string name="log_notification_permission_denied">알림 권한이 거부되었습니다</string>
+    <string name="log_media_permission_full">전체 이미지/미디어 권한이 허용되었습니다</string>
+    <string name="log_media_permission_partial">선택한 사진 접근만 허용되었습니다. 이후 자동 스크린샷 감지가 제한될 수 있습니다</string>
+    <string name="log_media_permission_denied">이미지/미디어 권한이 거부되었습니다</string>
+    <string name="log_overlay_permission_granted">오버레이 권한이 허용되었습니다</string>
+    <string name="log_overlay_permission_denied">오버레이 권한이 허용되지 않았습니다</string>
+    <string name="log_left_destination_saf">왼쪽 스와이프 대상이 SAF 폴더로 설정되었습니다</string>
+    <string name="log_right_destination_saf">오른쪽 스와이프 대상이 SAF 폴더로 설정되었습니다</string>
+    <string name="log_destination_app_managed">%1$s 스와이프 대상이 앱 관리 MediaStore 폴더로 설정되었습니다</string>
+    <string name="log_monitoring_started">사용자가 모니터링을 시작했습니다</string>
+    <string name="log_monitoring_stopped">모니터링이 중지되었습니다</string>
+    <string name="log_monitoring_stopped_by_user">사용자가 모니터링을 중지했습니다</string>
+    <string name="log_media_permission_missing_detection">이미지/미디어 읽기 권한이 없어 스크린샷 감지가 실패할 수 있습니다</string>
+    <string name="log_overlay_missing_fallback">오버레이 권한이 없어 알림 작업 대체 동작을 사용합니다</string>
+    <string name="log_route_action_no_event">스크린샷 이벤트가 없어 라우팅 작업을 무시했습니다</string>
+    <string name="log_routing_notification_dismissed">라우팅 알림을 닫았습니다</string>
+    <string name="route_failure_no_destination">%1$s 스와이프에 설정된 대상이 없습니다</string>
+</resources>

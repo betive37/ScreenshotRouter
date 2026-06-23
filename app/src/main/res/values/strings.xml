@@ -1,0 +1,121 @@
+<resources>
+    <string name="app_name">ScreenshotRouter</string>
+    <string name="unknown_screenshot_name">screenshot</string>
+    <string name="unknown_destination_label">destination</string>
+    <string name="default_destination_a">Destination A</string>
+    <string name="default_destination_b">Destination B</string>
+
+    <string name="tab_setup">Setup</string>
+    <string name="tab_destinations">Destinations</string>
+    <string name="tab_monitor">Monitor</string>
+    <string name="tab_log">Log</string>
+
+    <string name="action_stop">Stop</string>
+    <string name="action_save_to_a">Save to A</string>
+    <string name="action_save_to_b">Save to B</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="action_approve_delete">Approve delete</string>
+
+    <string name="notification_channel_monitoring_name">Active monitoring</string>
+    <string name="notification_channel_monitoring_description">Persistent notification shown while screenshot routing is active.</string>
+    <string name="notification_channel_routing_name">Screenshot routing actions</string>
+    <string name="notification_channel_routing_description">Fallback route buttons and route results.</string>
+    <string name="notification_monitoring_title">Screenshot routing active</string>
+    <string name="notification_monitoring_text">Watching MediaStore for new screenshots. Tap to open ScreenshotRouter.</string>
+    <string name="notification_route_title">Route screenshot</string>
+
+    <string name="route_result_copied">Copied to %1$s</string>
+    <string name="route_result_moved">Moved to %1$s</string>
+    <string name="route_result_delete_consent_required">Copied to %1$s; approve Android\'s delete request to remove the original.</string>
+    <string name="route_result_delete_consent_denied">Copied to %1$s; original kept because delete approval was not granted.</string>
+    <string name="log_delete_consent_missing_uri">Could not ask for delete approval because the screenshot URI was missing.</string>
+    <string name="log_delete_consent_launch_failed">Could not launch Android delete approval: %1$s</string>
+    <string name="log_delete_consent_unavailable">Android delete approval is unavailable for this item.</string>
+    <string name="log_delete_consent_activity_deferred">Delete approval could not open immediately; use the notification action. %1$s</string>
+
+    <string name="overlay_route_screenshot">Route screenshot</string>
+    <string name="overlay_route_hint">← B   %1$s   A →</string>
+    <string name="overlay_dismiss_content_description">Dismiss screenshot route card</string>
+
+    <string name="setup_title">Setup checklist</string>
+    <string name="permission_local_only">ScreenshotRouter has no INTERNET permission, no analytics, no crash reporting, and no OCR. Routing stays on this device.</string>
+    <string name="permission_notifications_title">Notifications</string>
+    <string name="permission_notifications_detail">Notifications keep foreground monitoring visible and provide action buttons when the overlay is unavailable.</string>
+    <string name="permission_media_title">Image/media access</string>
+    <string name="permission_media_detail">Image access lets ScreenshotRouter observe recent MediaStore image metadata and open the selected screenshot for copying.</string>
+    <string name="permission_media_partial_detail">Selected-photo access is active. Automatic future screenshot detection may not see new screenshots unless full image access or a source folder is configured.</string>
+    <string name="permission_overlay_title">Swipe overlay</string>
+    <string name="permission_overlay_detail">Display over other apps enables the optional swipe card. Without it, ScreenshotRouter uses notification action buttons instead.</string>
+    <string name="permission_granted">Granted</string>
+    <string name="permission_optional">Optional</string>
+    <string name="permission_needed">Needed</string>
+    <string name="action_grant_notifications">Grant notifications</string>
+    <string name="action_grant_image_access">Grant image access</string>
+    <string name="action_request_full_image_access">Request full image access</string>
+    <string name="action_open_overlay_settings">Open overlay settings</string>
+
+    <string name="destinations_title">Destination mapping</string>
+    <string name="destinations_description">Swipe left routes to B. Swipe right routes to A. SAF folders are preferred and stored as persisted tree URIs.</string>
+    <string name="route_mode_title">Routing mode</string>
+    <string name="route_mode_copy">Copy</string>
+    <string name="route_mode_move">Move</string>
+    <string name="route_mode_description">Move mode always copies first and deletes the original only when Android grants that delete path. If deletion is unavailable, the result will say copied and original kept.</string>
+    <string name="left_swipe_destination_title">Left swipe → B</string>
+    <string name="right_swipe_destination_title">Right swipe → A</string>
+    <string name="destination_enabled">Enabled</string>
+    <string name="destination_disabled">Disabled</string>
+    <string name="destination_label">Label</string>
+    <string name="destination_target">Target: %1$s</string>
+    <string name="destination_target_saf">SAF folder selected</string>
+    <string name="destination_target_media_store">MediaStore %1$s</string>
+    <string name="destination_target_unconfigured">Not configured</string>
+    <string name="action_choose_saf_folder">Choose SAF folder</string>
+    <string name="action_use_app_managed">Use app-managed</string>
+    <string name="action_clear_destination">Clear destination</string>
+
+    <string name="monitor_title">Monitor</string>
+    <string name="status_title">Status</string>
+    <string name="monitoring_active">Foreground monitoring is active</string>
+    <string name="monitoring_stopped">Monitoring is stopped</string>
+    <string name="notifications_status">Notifications: %1$s</string>
+    <string name="image_access_status">Image access: %1$s</string>
+    <string name="overlay_status">Overlay: %1$s</string>
+    <string name="left_destination_status">Left destination: %1$s</string>
+    <string name="right_destination_status">Right destination: %1$s</string>
+    <string name="mode_status">Mode: %1$s</string>
+    <string name="state_granted_lower">granted</string>
+    <string name="state_not_granted">not granted</string>
+    <string name="media_state_full">full image access granted</string>
+    <string name="media_state_partial">partial selected-photo access only</string>
+    <string name="media_state_missing">not granted</string>
+    <string name="overlay_available">available</string>
+    <string name="overlay_fallback">notification fallback will be used</string>
+    <string name="not_configured">not configured</string>
+    <string name="action_start_monitoring">Start monitoring</string>
+    <string name="latest_status_title">Latest local status</string>
+    <string name="no_local_events">No local events yet.</string>
+
+    <string name="log_title">Local log</string>
+    <string name="log_privacy_description">Only local metadata and route outcomes are stored. Screenshot contents are not analyzed or uploaded.</string>
+    <string name="action_clear_log">Clear log</string>
+    <string name="log_empty">No log entries yet.</string>
+
+    <string name="log_notification_permission_granted">Notification permission granted</string>
+    <string name="log_notification_permission_denied">Notification permission denied</string>
+    <string name="log_media_permission_full">Full image/media permission granted</string>
+    <string name="log_media_permission_partial">Only selected-photo access granted; future automatic screenshot detection may be incomplete</string>
+    <string name="log_media_permission_denied">Image/media permission denied</string>
+    <string name="log_overlay_permission_granted">Overlay permission granted</string>
+    <string name="log_overlay_permission_denied">Overlay permission not granted</string>
+    <string name="log_left_destination_saf">Left swipe destination set to SAF folder</string>
+    <string name="log_right_destination_saf">Right swipe destination set to SAF folder</string>
+    <string name="log_destination_app_managed">%1$s swipe destination set to app-managed MediaStore folder</string>
+    <string name="log_monitoring_started">Monitoring started by user</string>
+    <string name="log_monitoring_stopped">Monitoring stopped</string>
+    <string name="log_monitoring_stopped_by_user">Monitoring stopped by user</string>
+    <string name="log_media_permission_missing_detection">Image/media read permission is missing; screenshot detection may fail</string>
+    <string name="log_overlay_missing_fallback">Overlay permission missing; using notification action fallback</string>
+    <string name="log_route_action_no_event">Route action ignored: no screenshot event available</string>
+    <string name="log_routing_notification_dismissed">Routing notification dismissed</string>
+    <string name="route_failure_no_destination">No destination configured for %1$s swipe</string>
+</resources>
