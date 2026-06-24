@@ -37,6 +37,7 @@ fun DestinationMappingScreen(
     onSaveDestination: (Destination) -> Unit,
     onChooseLeftFolder: () -> Unit,
     onChooseRightFolder: () -> Unit,
+    appManagedAvailable: Boolean,
     onUseAppManaged: (SwipeDirection) -> Unit,
     onRouteModeChange: (RouteMode) -> Unit
 ) {
@@ -57,6 +58,7 @@ fun DestinationMappingScreen(
             destination = settings.leftDestination,
             onDestinationChange = onSaveDestination,
             onChooseFolder = onChooseLeftFolder,
+            appManagedAvailable = appManagedAvailable,
             onUseAppManaged = { onUseAppManaged(SwipeDirection.Left) }
         )
         DestinationCard(
@@ -64,6 +66,7 @@ fun DestinationMappingScreen(
             destination = settings.rightDestination,
             onDestinationChange = onSaveDestination,
             onChooseFolder = onChooseRightFolder,
+            appManagedAvailable = appManagedAvailable,
             onUseAppManaged = { onUseAppManaged(SwipeDirection.Right) }
         )
     }
@@ -97,6 +100,7 @@ private fun DestinationCard(
     destination: Destination,
     onDestinationChange: (Destination) -> Unit,
     onChooseFolder: () -> Unit,
+    appManagedAvailable: Boolean,
     onUseAppManaged: () -> Unit
 ) {
     Card(Modifier.fillMaxWidth()) {
@@ -133,7 +137,12 @@ private fun DestinationCard(
             Text(stringResource(R.string.destination_target, destination.describeTarget()))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = onChooseFolder) { Text(stringResource(R.string.action_choose_saf_folder)) }
-                OutlinedButton(onClick = onUseAppManaged) { Text(stringResource(R.string.action_use_app_managed)) }
+                OutlinedButton(onClick = onUseAppManaged, enabled = appManagedAvailable) {
+                    Text(stringResource(R.string.action_use_app_managed))
+                }
+            }
+            if (!appManagedAvailable) {
+                Text(stringResource(R.string.app_managed_requires_api29))
             }
             TextButton(
                 onClick = {

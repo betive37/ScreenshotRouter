@@ -30,6 +30,8 @@ fun MonitorScreen(
     fullMediaGranted: Boolean,
     partialMediaGranted: Boolean,
     overlayGranted: Boolean,
+    canStart: Boolean,
+    unavailableReason: String?,
     latestLog: LogEntry?,
     onStart: () -> Unit,
     onStop: () -> Unit
@@ -80,8 +82,14 @@ fun MonitorScreen(
             }
         }
 
+        if (!settings.monitoringActive && unavailableReason != null) {
+            Text(unavailableReason, style = MaterialTheme.typography.bodyMedium)
+        }
+
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = onStart, enabled = !settings.monitoringActive) { Text(stringResource(R.string.action_start_monitoring)) }
+            Button(onClick = onStart, enabled = !settings.monitoringActive && canStart) {
+                Text(stringResource(R.string.action_start_monitoring))
+            }
             OutlinedButton(onClick = onStop, enabled = settings.monitoringActive) { Text(stringResource(R.string.action_stop)) }
         }
 

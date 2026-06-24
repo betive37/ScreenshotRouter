@@ -59,7 +59,7 @@
     <string name="route_mode_title">Routing mode</string>
     <string name="route_mode_copy">Copy</string>
     <string name="route_mode_move">Move</string>
-    <string name="route_mode_description">Move mode always copies first and deletes the original only when Android grants that delete path. If deletion is unavailable, the result will say copied and original kept.</string>
+    <string name="route_mode_description">Move mode always copies first. Original deletion requires a separate Android delete approval action; without approval, the original is kept.</string>
     <string name="left_swipe_destination_title">Left swipe → B</string>
     <string name="right_swipe_destination_title">Right swipe → A</string>
     <string name="destination_enabled">Enabled</string>
@@ -118,4 +118,21 @@
     <string name="log_route_action_no_event">Route action ignored: no screenshot event available</string>
     <string name="log_routing_notification_dismissed">Routing notification dismissed</string>
     <string name="route_failure_no_destination">No destination configured for %1$s swipe</string>
+    <string name="app_managed_requires_api29">App-managed MediaStore destinations require Android 10 or later. Use a SAF folder on Android 8/9.</string>
+    <string name="monitoring_blocked_partial_media">Monitoring requires full image access. Selected-photo access on Android 14+ cannot reliably detect future screenshots.</string>
+    <string name="monitoring_blocked_missing_full_media">Monitoring requires full image/media access before it can observe new screenshots.</string>
+    <string name="monitoring_blocked_no_route_ui">Monitoring is disabled because the overlay is unavailable and notification permission is denied; there would be no route buttons.</string>
+    <string name="monitoring_blocked_generic">Monitoring prerequisites are not complete.</string>
+    <string name="log_saf_permission_not_persisted">Could not persist read/write access for the selected SAF folder; choose the folder again.</string>
+    <string name="log_app_managed_requires_api29">App-managed destinations require Android 10+; choose a SAF folder on this device.</string>
+    <string name="log_start_blocked_partial_media">Monitoring not started: Android 14+ selected-photo access cannot reliably detect future screenshots. Grant full image access.</string>
+    <string name="log_start_blocked_missing_full_media">Monitoring not started: full image/media access is missing.</string>
+    <string name="log_start_blocked_no_route_ui">Monitoring not started: overlay is unavailable and notification permission is denied, so no route UI could be shown.</string>
+    <string name="log_start_failed_foreground">Monitoring not started: foreground service could not start: %1$s</string>
+    <string name="log_monitoring_timeout">Monitoring stopped because Android timed out the foreground service.</string>
+    <string name="log_route_action_after_stop">Route action ignored because monitoring is stopped.</string>
+    <string name="log_route_ui_lost_stopping">Monitoring stopped because no route UI is currently available.</string>
+    <string name="log_monitoring_ignored_null_start">Service start ignored: missing explicit start action.</string>
+    <string name="log_monitoring_ignored_unknown_action">Service start ignored: unknown action.</string>
+    <string name="log_delete_consent_notification_unavailable">Copied to %1$s; original kept because notification permission is required to show the delete-approval action.</string>
 </resources>

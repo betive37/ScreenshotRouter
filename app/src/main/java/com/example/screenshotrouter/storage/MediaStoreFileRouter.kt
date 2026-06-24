@@ -1,5 +1,6 @@
 package com.example.screenshotrouter.storage
 
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
@@ -7,6 +8,7 @@ import android.os.Build
 import android.provider.MediaStore
 import com.example.screenshotrouter.core.model.ScreenshotEvent
 import com.example.screenshotrouter.core.util.FileNameUtils
+import com.example.screenshotrouter.detection.RoutedCopyRegistry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.InputStream
@@ -38,24 +40,36 @@ class MediaStoreFileRouter(
         val destinationUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
             ?: return@withContext CopyOutcome.Failure("Could not create MediaStore destination item")
 
-        runCatching {
-            val bytes = resolver.openInputStream(event.uri).useNullable { input ->
-                resolver.openOutputStream(destinationUri, "w").useNullable { output ->
-                    input.copyCountingTo(output)
-                }
-            } ?: return@withContext CopyOutcome.Failure("Could not open screenshot or MediaStore destination stream")
+        var keepDestination = false
+        try {
+            val input = resolver.openInputStream(event.uri)
+                ?: return@withContext CopyOutcome.Failure("Could not open screenshot stream")
+            val output = resolver.openOutputStream(destinationUri, "w")
+                ?: return@withContext CopyOutcome.Failure("Could not open MediaStore destination stream")
+            val bytes = input.use { source -> output.use { sink -> source.copyCountingTo(sink) } }
 
             if (bytes <= 0L) {
-                resolver.delete(destinationUri, null, null)
                 return@withContext CopyOutcome.Failure("Copied zero bytes; original was left untouched")
             }
 
             val done = ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) }
-            resolver.update(destinationUri, done, null, null)
+            val updatedRows = resolver.update(destinationUri, done, null, null)
+            if (updatedRows <= 0) {
+                return@withContext CopyOutcome.Failure("Could not finalize MediaStore destination item")
+            }
+
+            keepDestination = true
+            RoutedCopyRegistry.remember(
+                id = runCatching { ContentUris.parseId(destinationUri) }.getOrNull(),
+                uriString = destinationUri.toString(),
+                displayName = targetName,
+                relativePath = normalizedPath
+            )
             CopyOutcome.Success(destinationUri, bytes, targetName)
-        }.getOrElse { error ->
-            runCatching { resolver.delete(destinationUri, null, null) }
+        } catch (error: Throwable) {
             CopyOutcome.Failure("MediaStore copy failed: ${error.message ?: error::class.java.simpleName}", error)
+        } finally {
+            if (!keepDestination) runCatching { resolver.delete(destinationUri, null, null) }
         }
     }
 
@@ -77,8 +91,6 @@ class MediaStoreFileRouter(
         }
         return names
     }
-
-    private inline fun <T : java.io.Closeable, R> T?.useNullable(block: (T) -> R): R? = this?.use(block)
 
     private fun InputStream.copyCountingTo(output: OutputStream): Long {
         var total = 0L

@@ -8,8 +8,10 @@ ScreenshotRouter is a local-only Android APP that observes `MediaStore.Images` o
 - No analytics, Firebase, crash reporting, OCR, or network dependencies.
 - No `AccessibilityService`.
 - No `MANAGE_EXTERNAL_STORAGE`.
-- Monitoring is explicit and visible through a foreground service notification.
+- Monitoring is explicit and visible through a foreground service notification and/or app-owned overlay.
+- Monitoring is refused if full image access is missing, or if neither overlay nor notification route UI is available.
 - Logs are local and store only minimal metadata/status text.
+- Auto Backup is disabled so local DataStore preferences/logs are not cloud-backed by Android backup.
 
 ## Build
 
@@ -42,7 +44,7 @@ The module detects the highest installed Android SDK under `ANDROID_HOME`/`ANDRO
 
 ## MVP limitations
 
-- Move mode is honest copy-first behavior. The app attempts `ContentResolver.delete()` only after a verified copy. If Android requires a user-approved delete flow, the result reports that the copy succeeded but the original could not be deleted automatically. A future Activity-mediated `MediaStore.createDeleteRequest()` flow can be added.
+- Move mode is copy-first behavior. Original deletion is attempted only through Android's explicit delete approval flow after a verified copy; without approval the original is kept.
 - App-managed MediaStore destinations are supported on Android 10+. On Android 8/9, choose a SAF folder.
-- Automatic detection depends on MediaStore visibility and the user’s media permission grant. Android 14+ selected-photo-only grants may not expose future screenshots.
+- Automatic detection depends on MediaStore visibility and a full image/media permission grant. Android 14+ selected-photo-only grants are treated as insufficient for monitoring future screenshots.
 - Overlay cards are best-effort and will not draw over lock screen, permission dialogs, or protected system surfaces.

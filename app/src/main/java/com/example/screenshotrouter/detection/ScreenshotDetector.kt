@@ -47,6 +47,7 @@ class ScreenshotDetector(
 
     fun stop() {
         scanJob?.cancel()
+        scanJob = null
         observer?.let { resolver.unregisterContentObserver(it) }
         observer = null
         scope.launch { onStatus("MediaStore screenshot observer unregistered") }
@@ -62,9 +63,11 @@ class ScreenshotDetector(
     }
 
     private suspend fun scanRecentImages() {
-        val candidates = withContext(Dispatchers.IO) { queryRecentCandidates() }
         val now = timeProvider.nowMillis()
+        val candidates = withContext(Dispatchers.IO) { queryRecentCandidates(now) }
         for ((candidate, event) in candidates) {
+            if (candidate.ownerPackageName == context.packageName) continue
+            if (RoutedCopyRegistry.isRoutedCopy(candidate.id, candidate.uriString, candidate.displayName, candidate.relativePath, now)) continue
             if (!classifier.isScreenshot(candidate, now)) continue
             if (deduplicator.isDuplicate(candidate.id, candidate.uriString, now)) continue
             onStatus("Detected screenshot-like image: ${event.displayName}")
@@ -73,16 +76,17 @@ class ScreenshotDetector(
     }
 
     @SuppressLint("MissingPermission")
-    private fun queryRecentCandidates(): List<Pair<ScreenshotCandidate, ScreenshotEvent>> {
+    private fun queryRecentCandidates(nowMillis: Long): List<Pair<ScreenshotCandidate, ScreenshotEvent>> {
         val projection = buildProjection()
+        val (selection, selectionArgs) = buildRecentImageSelection(nowMillis)
         val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC"
         val out = mutableListOf<Pair<ScreenshotCandidate, ScreenshotEvent>>()
 
         resolver.query(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             projection,
-            null,
-            null,
+            selection,
+            selectionArgs,
             sortOrder
         )?.use { cursor ->
             var scanned = 0
@@ -107,6 +111,11 @@ class ScreenshotDetector(
                 } else {
                     null
                 }
+                val ownerPackageName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    cursor.getStringOrNull(MediaStore.MediaColumns.OWNER_PACKAGE_NAME)
+                } else {
+                    null
+                }
 
                 val candidate = ScreenshotCandidate(
                     id = id,
@@ -117,7 +126,8 @@ class ScreenshotDetector(
                     dateTakenMillis = dateTakenMillis,
                     mimeType = mimeType,
                     sizeBytes = size,
-                    isPending = isPending
+                    isPending = isPending,
+                    ownerPackageName = ownerPackageName
                 )
                 val event = ScreenshotEvent(
                     id = id,
@@ -143,8 +153,28 @@ class ScreenshotDetector(
         add(MediaStore.Images.Media.DATE_TAKEN)
         add(MediaStore.Images.Media.MIME_TYPE)
         add(MediaStore.Images.Media.SIZE)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) add(MediaStore.Images.Media.IS_PENDING)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            add(MediaStore.Images.Media.IS_PENDING)
+            add(MediaStore.MediaColumns.OWNER_PACKAGE_NAME)
+        }
     }.toTypedArray()
+
+    private fun buildRecentImageSelection(nowMillis: Long): Pair<String, Array<String>> {
+        val minDateAddedSeconds = ((nowMillis - QUERY_LOOKBACK_MILLIS).coerceAtLeast(0L) / 1000L).toString()
+        val parts = buildList {
+            add("${MediaStore.Images.Media.DATE_ADDED}>=?")
+            add("${MediaStore.Images.Media.SIZE}>?")
+            add("${MediaStore.Images.Media.MIME_TYPE} LIKE ?")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) add("${MediaStore.Images.Media.IS_PENDING}=?")
+        }
+        val args = buildList {
+            add(minDateAddedSeconds)
+            add("0")
+            add("image/%")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) add("0")
+        }.toTypedArray()
+        return parts.joinToString(" AND ") to args
+    }
 
     private fun Cursor.getStringOrNull(column: String): String? {
         val index = getColumnIndex(column)
@@ -164,5 +194,6 @@ class ScreenshotDetector(
     companion object {
         const val DEBOUNCE_MILLIS = 900L
         const val QUERY_LIMIT = 30
+        const val QUERY_LOOKBACK_MILLIS = 60_000L
     }
 }

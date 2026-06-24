@@ -21,6 +21,18 @@ class ScreenshotClassifierTest {
     }
 
     @Test
+    fun japaneseScreenshotNameIsAccepted() {
+        val candidate = candidate(displayName = "スクリーンショット_20240623.png")
+        assertTrue(classifier.isScreenshot(candidate, now))
+    }
+
+    @Test
+    fun chineseScreenshotNameIsAccepted() {
+        assertTrue(classifier.isScreenshot(candidate(displayName = "截图_20240623.png"), now))
+        assertTrue(classifier.isScreenshot(candidate(displayName = "螢幕截圖_20240623.png"), now))
+    }
+
+    @Test
     fun screenshotRelativePathIsAccepted() {
         val candidate = candidate(displayName = "IMG_0001.png", relativePath = "Pictures/Screenshots/")
         assertTrue(classifier.isScreenshot(candidate, now))
@@ -29,6 +41,15 @@ class ScreenshotClassifierTest {
     @Test
     fun oldImageIsRejected() {
         val candidate = candidate(dateAddedMillis = now - 60_000L)
+        assertFalse(classifier.isScreenshot(candidate, now))
+    }
+
+    @Test
+    fun appManagedRoutedCopiesAreRejectedEvenWhenNameLooksLikeScreenshot() {
+        val candidate = candidate(
+            displayName = "Screenshot_20240623.png",
+            relativePath = "Pictures/ScreenshotRouter/A/"
+        )
         assertFalse(classifier.isScreenshot(candidate, now))
     }
 

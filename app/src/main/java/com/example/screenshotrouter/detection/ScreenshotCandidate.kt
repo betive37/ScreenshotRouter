@@ -9,5 +9,6 @@ data class ScreenshotCandidate(
     val dateTakenMillis: Long?,
     val mimeType: String?,
     val sizeBytes: Long?,
-    val isPending: Boolean?
+    val isPending: Boolean?,
+    val ownerPackageName: String? = null
 )

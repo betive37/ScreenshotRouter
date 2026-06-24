@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -29,17 +30,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.screenshotrouter.R
 import com.example.screenshotrouter.core.model.AppSettings
 import com.example.screenshotrouter.core.model.Destination
 import com.example.screenshotrouter.core.model.LogEntry
 import com.example.screenshotrouter.core.model.RouteMode
 import com.example.screenshotrouter.core.model.SwipeDirection
+import com.example.screenshotrouter.core.util.AppManagedPaths
 import com.example.screenshotrouter.data.DataStoreLogRepository
 import com.example.screenshotrouter.data.DataStoreSettingsRepository
 import com.example.screenshotrouter.monitoring.ScreenshotMonitorService
 import com.example.screenshotrouter.overlay.OverlayPermission
 import com.example.screenshotrouter.permissions.PermissionChecks
+import com.example.screenshotrouter.storage.SafPermissionVerifier
 import com.example.screenshotrouter.ui.destinations.DestinationMappingScreen
 import com.example.screenshotrouter.ui.log.LocalLogScreen
 import com.example.screenshotrouter.ui.monitor.MonitorScreen
@@ -53,7 +59,15 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val settings by settingsRepository.settings.collectAsState(initial = AppSettings())
+            val initialSettings = AppSettings(
+                leftDestination = AppSettings.defaultDestination(SwipeDirection.Left).copy(
+                    label = getString(R.string.default_destination_b)
+                ),
+                rightDestination = AppSettings.defaultDestination(SwipeDirection.Right).copy(
+                    label = getString(R.string.default_destination_a)
+                )
+            )
+            val settings by settingsRepository.settings.collectAsState(initial = initialSettings)
             val logs by logRepository.entries.collectAsState(initial = emptyList())
             ScreenshotRouterApp(
                 settings = settings,
@@ -77,9 +91,10 @@ class MainActivity : ComponentActivity() {
         startService(ScreenshotMonitorService.stopIntent(this))
     }
 
-    private fun takePersistableTreePermission(uri: Uri) {
+    private fun takePersistableTreePermission(uri: Uri): Boolean {
         val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-        runCatching { contentResolver.takePersistableUriPermission(uri, flags) }
+        return runCatching { contentResolver.takePersistableUriPermission(uri, flags) }
+            .isSuccess && SafPermissionVerifier.hasPersistedReadWritePermission(this, uri)
     }
 }
 
@@ -101,12 +116,21 @@ private fun ScreenshotRouterApp(
     clearLog: suspend () -> Unit,
     startMonitoring: () -> Unit,
     stopMonitoring: () -> Unit,
-    takePersistableTreePermission: (Uri) -> Unit
+    takePersistableTreePermission: (Uri) -> Boolean
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
     var selectedTab by remember { mutableStateOf(MainTab.Setup) }
     var permissionRefresh by remember { mutableIntStateOf(0) }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) permissionRefresh++
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         permissionRefresh++
@@ -118,7 +142,7 @@ private fun ScreenshotRouterApp(
             )
         }
     }
-    val mediaLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants ->
+    val mediaLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { _ ->
         permissionRefresh++
         val fullGranted = PermissionChecks.hasFullImageReadAccess(context)
         val partial = PermissionChecks.hasPartialVisualAccess(context)
@@ -145,20 +169,28 @@ private fun ScreenshotRouterApp(
     }
     val leftFolderLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         uri ?: return@rememberLauncherForActivityResult
-        takePersistableTreePermission(uri)
+        val persisted = takePersistableTreePermission(uri)
         val updated = settings.leftDestination.copy(treeUri = uri.toString(), relativePath = null, enabled = true)
         scope.launch {
-            saveDestination(updated)
-            appendLog(context.getString(R.string.log_left_destination_saf))
+            if (persisted) {
+                saveDestination(updated)
+                appendLog(context.getString(R.string.log_left_destination_saf))
+            } else {
+                appendLog(context.getString(R.string.log_saf_permission_not_persisted))
+            }
         }
     }
     val rightFolderLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         uri ?: return@rememberLauncherForActivityResult
-        takePersistableTreePermission(uri)
+        val persisted = takePersistableTreePermission(uri)
         val updated = settings.rightDestination.copy(treeUri = uri.toString(), relativePath = null, enabled = true)
         scope.launch {
-            saveDestination(updated)
-            appendLog(context.getString(R.string.log_right_destination_saf))
+            if (persisted) {
+                saveDestination(updated)
+                appendLog(context.getString(R.string.log_right_destination_saf))
+            } else {
+                appendLog(context.getString(R.string.log_saf_permission_not_persisted))
+            }
         }
     }
 
@@ -166,6 +198,13 @@ private fun ScreenshotRouterApp(
     val fullMediaGranted = remember(permissionRefresh) { PermissionChecks.hasFullImageReadAccess(context) }
     val partialMediaGranted = remember(permissionRefresh) { PermissionChecks.hasPartialVisualAccess(context) }
     val overlayGranted = remember(permissionRefresh) { OverlayPermission.canDrawOverlays(context) }
+    val routeUiAvailable = overlayGranted || notificationGranted
+    val canStartMonitoring = fullMediaGranted && routeUiAvailable
+    val monitorUnavailableReason = monitoringUnavailableReason(
+        fullMediaGranted = fullMediaGranted,
+        partialMediaGranted = partialMediaGranted,
+        routeUiAvailable = routeUiAvailable
+    )
 
     MaterialTheme(colorScheme = lightColorScheme()) {
         Scaffold(
@@ -204,24 +243,29 @@ private fun ScreenshotRouterApp(
                     onSaveDestination = { destination -> scope.launch { saveDestination(destination) } },
                     onChooseLeftFolder = { leftFolderLauncher.launch(null) },
                     onChooseRightFolder = { rightFolderLauncher.launch(null) },
+                    appManagedAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
                     onUseAppManaged = { direction ->
-                        val destination = when (direction) {
-                            SwipeDirection.Left -> settings.leftDestination.copy(
-                                treeUri = null,
-                                relativePath = "Pictures/ScreenshotRouter/B",
-                                enabled = true
-                            )
-                            SwipeDirection.Right -> settings.rightDestination.copy(
-                                treeUri = null,
-                                relativePath = "Pictures/ScreenshotRouter/A",
-                                enabled = true
-                            )
-                            else -> null
-                        }
-                        destination?.let {
-                            scope.launch {
-                                saveDestination(it)
-                                appendLog(context.getString(R.string.log_destination_app_managed, direction.name))
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                            scope.launch { appendLog(context.getString(R.string.log_app_managed_requires_api29)) }
+                        } else {
+                            val destination = when (direction) {
+                                SwipeDirection.Left -> settings.leftDestination.copy(
+                                    treeUri = null,
+                                    relativePath = AppManagedPaths.forSwipeDirection(direction),
+                                    enabled = true
+                                )
+                                SwipeDirection.Right -> settings.rightDestination.copy(
+                                    treeUri = null,
+                                    relativePath = AppManagedPaths.forSwipeDirection(direction),
+                                    enabled = true
+                                )
+                                else -> null
+                            }
+                            destination?.let {
+                                scope.launch {
+                                    saveDestination(it)
+                                    appendLog(context.getString(R.string.log_destination_app_managed, direction.name))
+                                }
                             }
                         }
                     },
@@ -234,8 +278,18 @@ private fun ScreenshotRouterApp(
                     fullMediaGranted = fullMediaGranted,
                     partialMediaGranted = partialMediaGranted,
                     overlayGranted = overlayGranted,
+                    canStart = canStartMonitoring,
+                    unavailableReason = monitorUnavailableReason,
                     latestLog = logs.firstOrNull(),
-                    onStart = startMonitoring,
+                    onStart = {
+                        if (canStartMonitoring) {
+                            startMonitoring()
+                        } else {
+                            scope.launch {
+                                appendLog(monitorUnavailableReason ?: context.getString(R.string.monitoring_blocked_generic))
+                            }
+                        }
+                    },
                     onStop = stopMonitoring
                 )
                 MainTab.Log -> LocalLogScreen(
@@ -246,6 +300,18 @@ private fun ScreenshotRouterApp(
             }
         }
     }
+}
+
+@Composable
+private fun monitoringUnavailableReason(
+    fullMediaGranted: Boolean,
+    partialMediaGranted: Boolean,
+    routeUiAvailable: Boolean
+): String? = when {
+    !fullMediaGranted && partialMediaGranted -> stringResource(R.string.monitoring_blocked_partial_media)
+    !fullMediaGranted -> stringResource(R.string.monitoring_blocked_missing_full_media)
+    !routeUiAvailable -> stringResource(R.string.monitoring_blocked_no_route_ui)
+    else -> null
 }
 
 @Composable

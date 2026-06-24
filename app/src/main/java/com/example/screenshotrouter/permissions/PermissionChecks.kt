@@ -4,14 +4,17 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 
 object PermissionChecks {
     private const val READ_MEDIA_VISUAL_USER_SELECTED = "android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
 
-    fun hasNotificationPermission(context: Context): Boolean =
-        Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+    fun hasNotificationPermission(context: Context): Boolean {
+        val runtimePermissionGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
             isGranted(context, Manifest.permission.POST_NOTIFICATIONS)
+        return runtimePermissionGranted && NotificationManagerCompat.from(context).areNotificationsEnabled()
+    }
 
     fun hasFullImageReadAccess(context: Context): Boolean = when {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> isGranted(context, Manifest.permission.READ_MEDIA_IMAGES)

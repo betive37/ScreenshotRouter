@@ -6,8 +6,6 @@ import com.example.screenshotrouter.core.model.Destination
 import com.example.screenshotrouter.core.model.RouteMode
 import com.example.screenshotrouter.core.model.RouteResult
 import com.example.screenshotrouter.core.model.ScreenshotEvent
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class ScreenshotRouter(
     context: Context
@@ -26,7 +24,15 @@ class ScreenshotRouter(
         }
 
         val copyOutcome = when {
-            !destination.treeUri.isNullOrBlank() -> safRouter.copy(event, Uri.parse(destination.treeUri))
+            !destination.treeUri.isNullOrBlank() -> {
+                val treeUri = Uri.parse(destination.treeUri)
+                if (!SafPermissionVerifier.hasPersistedReadWritePermission(appContext, treeUri)) {
+                    return RouteResult.NeedsUserPermission(
+                        "Selected destination permission is no longer available; choose the SAF folder again."
+                    )
+                }
+                safRouter.copy(event, treeUri)
+            }
             !destination.relativePath.isNullOrBlank() -> mediaStoreRouter.copy(event, destination.relativePath)
             else -> CopyOutcome.Failure("Destination has no writable target")
         }
@@ -35,23 +41,11 @@ class ScreenshotRouter(
             is CopyOutcome.Failure -> RouteResult.Failed(copyOutcome.reason, copyOutcome.cause)
             is CopyOutcome.Success -> {
                 val deleteStatus = if (routeMode == RouteMode.Move) {
-                    tryDeleteOriginal(event)
+                    DeleteStatus.NeedsUserPermission
                 } else {
                     DeleteStatus.NotAttempted
                 }
                 RouteDecision.afterVerifiedCopy(routeMode, destination.label, deleteStatus)
-            }
-        }
-    }
-
-    private suspend fun tryDeleteOriginal(event: ScreenshotEvent): DeleteStatus = withContext(Dispatchers.IO) {
-        runCatching {
-            val deletedRows = appContext.contentResolver.delete(event.uri, null, null)
-            if (deletedRows > 0) DeleteStatus.Deleted else DeleteStatus.NotAllowed
-        }.getOrElse { error ->
-            when (error) {
-                is SecurityException -> DeleteStatus.NeedsUserPermission
-                else -> DeleteStatus.Failed(error.message ?: error::class.java.simpleName)
             }
         }
     }

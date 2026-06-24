@@ -7,7 +7,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.screenshotrouter.MainActivity
@@ -54,7 +53,7 @@ class MonitorNotificationController(
             .addAction(
                 R.drawable.ic_stat_screenshot_router,
                 context.getString(R.string.action_stop),
-                serviceIntent(ScreenshotMonitorService.ACTION_STOP, REQUEST_STOP)
+                serviceIntent(ScreenshotMonitorService.ACTION_STOP, NotificationIds.REQUEST_STOP)
             )
             .build()
     }
@@ -86,7 +85,7 @@ class MonitorNotificationController(
                 routeIntent(ScreenshotMonitorService.ACTION_DISMISS, event)
             )
             .build()
-        runCatching { notificationManager.notify(routeNotificationId(event), notification) }
+        runCatching { notificationManager.notify(NotificationIds.routeNotificationId(event), notification) }
     }
 
     @SuppressLint("MissingPermission")
@@ -102,7 +101,7 @@ class MonitorNotificationController(
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
 
-        runCatching { notificationManager.notify(ROUTE_RESULT_NOTIFICATION_ID, builder.build()) }
+        runCatching { notificationManager.notify(NotificationIds.ROUTE_RESULT_NOTIFICATION_ID, builder.build()) }
     }
 
     @SuppressLint("MissingPermission")
@@ -124,19 +123,19 @@ class MonitorNotificationController(
                 deleteConsentIntent(event, destinationLabel)
             )
             .build()
-        runCatching { notificationManager.notify(ROUTE_RESULT_NOTIFICATION_ID, notification) }
+        runCatching { notificationManager.notify(NotificationIds.ROUTE_RESULT_NOTIFICATION_ID, notification) }
     }
 
     fun cancelRouteNotification(event: ScreenshotEvent?) {
         event ?: return
-        runCatching { notificationManager.cancel(routeNotificationId(event)) }
+        runCatching { notificationManager.cancel(NotificationIds.routeNotificationId(event)) }
     }
 
     private fun activityIntent(): PendingIntent {
         val intent = Intent(context, MainActivity::class.java)
         return PendingIntent.getActivity(
             context,
-            REQUEST_OPEN_ACTIVITY,
+            NotificationIds.REQUEST_OPEN_ACTIVITY,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -158,32 +157,24 @@ class MonitorNotificationController(
             .putScreenshotEvent(event)
         return PendingIntent.getService(
             context,
-            (event.id.hashCode() * 31) + action.hashCode(),
+            NotificationIds.routeActionRequestCode(event, action),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
     }
 
-    private fun routeNotificationId(event: ScreenshotEvent): Int = ROUTE_FALLBACK_NOTIFICATION_BASE + event.id.hashCode()
-
     private fun deleteConsentIntent(event: ScreenshotEvent, destinationLabel: String): PendingIntent {
         val intent = DeleteConsentActivity.intent(context, event, destinationLabel)
         return PendingIntent.getActivity(
             context,
-            (event.id.hashCode() * 37) + REQUEST_DELETE_CONSENT,
+            NotificationIds.deleteConsentRequestCode(event),
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
     }
 
     companion object {
-        const val MONITOR_NOTIFICATION_ID = 1001
-        private const val ROUTE_RESULT_NOTIFICATION_ID = 1002
-        private const val ROUTE_FALLBACK_NOTIFICATION_BASE = 2000
         private const val MONITOR_CHANNEL_ID = "monitoring"
         private const val ROUTE_CHANNEL_ID = "routing"
-        private const val REQUEST_OPEN_ACTIVITY = 1
-        private const val REQUEST_STOP = 2
-        private const val REQUEST_DELETE_CONSENT = 3
     }
 }
