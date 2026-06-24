@@ -1,6 +1,6 @@
-# ScreenshotRouter MVP
+# ScreenshotRouter
 
-ScreenshotRouter is a local-only Android MVP that observes `MediaStore.Images` only while a user-started foreground service is active. When it detects a recent screenshot-like image, it shows an app-owned swipe overlay if `SYSTEM_ALERT_WINDOW` is granted; otherwise it posts a notification with left/right routing actions.
+ScreenshotRouter is a local-only Android APP that observes `MediaStore.Images` only while a user-started foreground service is active. When it detects a recent screenshot-like image, it shows an app-owned swipe overlay if `SYSTEM_ALERT_WINDOW` is granted; otherwise it posts a notification with left/right routing actions.
 
 ## Privacy behavior
 
