@@ -1,0 +1,22 @@
+.gradle/
+.gradle-local/
+build/
+**/build/
+
+local.properties
+*.iml
+.idea/
+
+captures/
+*.apk
+*.aab
+*.ap_
+
+.DS_Store
+.codegraph
+
+# Local agent/internal working notes
+AGENTS.md
+PLAN.md
+CHANGES.md
+VERIFICATION.md
